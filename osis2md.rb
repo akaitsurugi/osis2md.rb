@@ -223,7 +223,7 @@ def process_book(book, markdownDir, bookIndex)
   puts "index is: #{bookIndex}" if $DEBUG_MODE == 1
   fileName = shortTitle.downcase.tr(' ', '_')
   puts fileName if $DEBUG_MODE == 1
-  folderName = format('%02d', bookIndex + 1) + '_' + fileName
+  folderName = format('%02d', bookIndex + 1) + '.' + fileName
   markdownPath = File.join(markdownDir, folderName)
   FileUtils.mkdir_p(markdownPath)
 
