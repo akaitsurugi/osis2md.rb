@@ -285,7 +285,7 @@ def main
   end
   osis_source = ARGV[0]
 
-  $JAPANESE_MODE = osis_source.include?('jap') ? 1 : 0
+  $JAPANESE_MODE = File.basename(osis_source).include?('jap') ? 1 : 0
   puts "Japanese mode enabled" if $JAPANESE_MODE == 1
   
   osisFile = read_osis_xml(osis_source)
