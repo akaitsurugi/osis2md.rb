@@ -77,12 +77,12 @@ end
 
 def build_verse_number(verseNumber, acrosticMarker)
   if $READERS_MODE == 0
-    if (verseNumber == 1 || acrosticMarker == 1) && $NO_DROP_CAPS == 0
+    if (@verseNumber == 1 || @acrosticMarker == 1) && $NO_DROP_CAPS == 0
       ''
     elsif $PARAGRAPH_MODE == 1
-      '<span class="verse-number-super">' + verseNumber.to_s + '</span>'
+      '<span class="verse-number-super">' + @verseNumber.to_s + '</span>'
     else
-      '<span class="verse-number">' + verseNumber.to_s + '&ensp;</span>'
+      '<span class="verse-number">' + @verseNumber.to_s + '&ensp;</span>'
     end
   else
     ''
@@ -90,7 +90,7 @@ def build_verse_number(verseNumber, acrosticMarker)
 end
 
 def handle_verse_start(verseNumberSup, nextChapterPart, acrosticMarker)
-  if $JAPANESE_MODE == 0 && $NO_PILCROWS == 0 && nextChapterPart && nextChapterPart.element? && nextChapterPart.name == 'milestone' && acrosticMarker == 0
+  if $JAPANESE_MODE == 0 && $NO_PILCROWS == 0 && nextChapterPart && nextChapterPart.element? && nextChapterPart.name == 'milestone' && @acrosticMarker == 0
     return "#{verseNumberSup}¶ "
   elsif ($PARAGRAPH_MODE == 1 || $READERS_MODE == 1) && nextChapterPart && nextChapterPart.element? && nextChapterPart.name == 'milestone'
     return "\n#{verseNumberSup}"
@@ -99,23 +99,39 @@ def handle_verse_start(verseNumberSup, nextChapterPart, acrosticMarker)
   end
 end
 
-def process_note_content(noteElement)
-  content = []
-  noteElement.children.each do |child|
+#   TODO: fix this naming!
+def process_inner_content(innerElement)
+  text = []
+  elementParts = innerElement.children
+  elementParts.each_with_index do |child, index|
+    # Skip footnote verse number references
     next if child.element? && child.name == 'reference'
 
-    if child.element? && child.name == 'hi' && child['type'] == 'bold'
-      content << "**#{child.text}**"
+    if child.element? && child.name == 'verse' && child.has_attribute?('osisID')
+      @verseNumber += 1
+      verseNumberSup = build_verse_number(@verseNumber, @acrosticMarker)
+      nextChapterPart = child.parent.children[index +1] if index + 1 < child.parent.children.size
+      verse_start = handle_verse_start(verseNumberSup, nextChapterPart, @acrosticMarker)
+      text << verse_start
+    elsif child.element? && child.name == 'hi' && child['type'] == 'bold'
+      text << "**#{child.text}**"
+    elsif child.element? && child.name == 'transChange'
+      text << "_#{child.text}_"
+    elsif child.element? && child.name == 'divineName'
+      text << '<span class="small-caps">' + child.text + '</span>'
+    elsif child.element? && child.name == 'verse' && child.has_attribute?('eID')
+      # Insert two spaces at the end of a verse for markdown line breaks
+      text << '  ' if $PARAGRAPH_MODE == 0 && $READERS_MODE == 0
     else
-      content << child.text
+      text << child.text
     end
   end
-  content.join.lstrip
+  text.join.lstrip
 end
 
 def process_chapter(chapter, text, footnotes)
-  verseNumber = 0
-  acrosticMarker = 0
+  @verseNumber = 0
+  @acrosticMarker = 0
   # Cache the chapter's contents so they don't have to be fetched multiple times
   chapterParts = chapter.children
   chapterParts.each_with_index do |chapterPart, index|
@@ -123,36 +139,44 @@ def process_chapter(chapter, text, footnotes)
       chapterHeader = handle_title(chapterPart, 'chapter')
       text << "#{chapterHeader}\n"
       puts chapterHeader if $DEBUG_MODE == 1
-      acrosticMarker = 0
+      @acrosticMarker = 0
     elsif chapterPart.element? && chapterPart.name == 'title' && chapterPart['type'] == 'sub'
       # Book titles in Psalms
       chapterHeader = handle_title(chapterPart, 'sub')
       text << "#{chapterHeader}\n"
       puts chapterHeader if $DEBUG_MODE == 1
-      acrosticMarker = 0
+      @acrosticMarker = 0
     elsif chapterPart.element? && chapterPart.name == 'title' && chapterPart['type'] == 'acrostic'
       acrosticHeader = handle_title(chapterPart, 'acrostic')
       text << acrosticHeader
-      acrosticMarker = 1
+      @acrosticMarker = 1
     elsif chapterPart.element? && chapterPart.name == 'title' && (chapterPart['type'] == 'psalm' || (chapterPart['canonical'] == 'true' && chapterPart['type'] == 'psalm'))
       psalm_text = handle_psalm_title(chapterPart)
       text << psalm_text
-      acrosticMarker = 0
+      @acrosticMarker = 0
     elsif chapterPart.element? && chapterPart.name == 'verse' && chapterPart.has_attribute?('osisID')
-      verseNumber += 1
-      verseNumberSup = build_verse_number(verseNumber, acrosticMarker)
+      @verseNumber += 1
+      verseNumberSup = build_verse_number(@verseNumber, @acrosticMarker)
       nextChapterPart = chapter.children[index + 1] if index + 1 < chapter.children.size
-      verse_start = handle_verse_start(verseNumberSup, nextChapterPart, acrosticMarker)
+      verse_start = handle_verse_start(verseNumberSup, nextChapterPart, @acrosticMarker)
       text << verse_start
-      acrosticMarker = 0
+      @acrosticMarker = 0
     elsif chapterPart.element? && chapterPart.name == 'note'
       if $PROCESS_FOOTNOTES == 1
         # Add a markdown footnote number directly to the text
         footnoteNumber = footnotes.size + 1
         text << "[^#{footnoteNumber}]"
         # Put the footnote text into the footnotes array, so we can use it later
-        footnotes << process_note_content(chapterPart)
+        footnotes << process_inner_content(chapterPart)
         puts chapterPart.text.split(' ')[1] if $DEBUG_MODE == 1
+      end
+    elsif chapterPart.element? && chapterPart.name == 'q'
+      if $PROCESS_QUOTES == 1
+        quote = '"' + process_inner_content(chapterPart) + '"'
+        text << quote
+        puts quote if $DEBUG_MODE == 1
+      else
+        text << process_inner_content(chapterPart)
       end
     elsif chapterPart.element? && chapterPart.name == 'transChange'
       italic = '_' + chapterPart.text + '_'
@@ -253,6 +277,7 @@ def main
     opts.on('-d', '--debug', 'Enable debug mode') { options[:debug] = true }
     opts.on('-f', '--frontmatter', 'Enable Grav frontmatter') { options[:frontmatter] = true }
     opts.on('-n', '--process-footnotes', 'Process footnotes') { options[:process_footnotes] = true }
+    opts.on('-q', '--process-quotes', 'Process quotes') { options[:process_quotes] = true }
     opts.on('-c', '--no-drop-caps', 'Disable drop caps') { options[:no_drop_caps] = true }
     opts.on('-p', '--no-pilcrows', 'Disable pilcrows') { options[:no_pilcrows] = true }
     opts.on('-t', '--capitalize-chapter-titles', 'Capitalize chapter titles') { options[:capitalize_chapter_titles] = true }
@@ -265,6 +290,7 @@ def main
   $DEBUG_MODE = options[:debug] ? 1 : 0
   $FRONTMATTER = options[:frontmatter] ? 1 : 0
   $PROCESS_FOOTNOTES = options[:process_footnotes] ? 1 : 0
+  $PROCESS_QUOTES = options[:process_quotes] ? 1 : 0
   $NO_DROP_CAPS = options[:no_drop_caps] ? 1 : 0
   $NO_PILCROWS = options[:no_pilcrows] ? 1 : 0
   $CAPITALIZE_CHATPER_TITLES = options[:capitalize_chapter_titles] ? 1 : 0

@@ -25,6 +25,7 @@ Usage: osis2md.rb [options] OSIS_FILE
     -d, --debug                      Enable debug mode
     -f, --frontmatter                Enable Grav frontmatter
     -n, --process-footnotes          Process footnotes
+    -q, --process-quotes             Process quotes
     -c, --no-drop-caps               Disable drop caps
     -p, --no-pilcrows                Disable pilcrows
     -t, --capitalize-chapter-titles  Capitalize chapter titles
