@@ -13,7 +13,7 @@ This script was originally written in Python. I needed to parse the XML from the
 
 It took me a couple of years to iron out the kinks, as I read a significant portion of the text to verify that the script preserved the words. The major discrepancies have been resolved, but if there is anything missing or corrupted in the text, please [let me know](/about#contribute).
 
-At the beginning of 2026, I refactored it and then experimented with AI by converting it to Ruby. I wasn't sure if there would be any difference, but I had been thinking about learning Ruby, so I figured it would only serve as an educational exercise. The original Python version used `beautifulsoup` and `lxml` to parse the XML, and the Ruby version uses `nokogiri`. I didn't anticipate how good the end result would be: a more readable script that ran three times as fast as the Python version. I don't plan to (or even desire to) use AI for much, but it introduced me to some basic Ruby concepts. It was fun to see how Ruby looks, and reviewing every line convinced me that I should use Ruby more.
+At the beginning of 2026, I refactored it and then experimented with AI[^1] by converting it to Ruby. I wasn't sure if there would be any difference, but I had been thinking about learning Ruby, so I figured it would only serve as an educational exercise. The original Python version used `beautifulsoup` and `lxml` to parse the XML, and the Ruby version uses `nokogiri`. I didn't anticipate how good the end result would be: a more readable script that ran three times as fast as the Python version. I don't plan to (or even desire to) use AI for much, but it introduced me to some basic Ruby concepts. It was fun to see how Ruby looks, and reviewing every line convinced me that I should use Ruby more.
 
 
 ## Usage
@@ -55,3 +55,5 @@ The OSIS version of the Bible has a lot of data (footnotes, titles, paragraph ma
 
 Git is great for working with the text of the Bible. If Bible translators utilized OSIS with Git, they would have a log with the reasoning behind translation choices and changes, and a source that can easily be converted to many other formats.
 
+
+[^1]: I state this for transparency of the process, as I don't have a high opinion of AI in general, but I recognize that it can be useful for certain tasks. I reviewed all of the Ruby code, understand it, confirmed that the output 100% matched the Python version, and I fully plan on making future changes myself.
