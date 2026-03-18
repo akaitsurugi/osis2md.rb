@@ -27,7 +27,7 @@ def build_book_header(shortTitle, book)
     if $JAPANESE_MODE == 0
       text << "---\ntitle: '#{shortTitle}'\ntemplate: bible\nsimplesearch:\n    process: false\n---\n\n"
     else
-      text << "---\ntitle: '#{shortTitle}'\ntemplate: bible.ja\nsimplesearch:\n    process: false\nmarkdown:\n    extra: true\n---\n\n"
+      text << "---\ntitle: '#{shortTitle}'\ntemplate: bible\ntaxonomy:\n    language: japanese\nsimplesearch:\n    process: false\nmarkdown:\n    extra: true\n---\n\n"
     end
     titleHeader = "# " + shortTitle
     text << "#{titleHeader}\n\n"
