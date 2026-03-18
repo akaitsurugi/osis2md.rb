@@ -120,7 +120,7 @@ def process_inner_content(innerElement)
     elsif child.element? && child.name == 'divineName'
       text << '<span class="small-caps">' + child.text + '</span>'
     elsif child.element? && child.name == 'verse' && child.has_attribute?('eID')
-      # Insert two spaces at the end of a verse for markdown line breaks
+      # Insert two spaces at the end of a verse for Markdown line breaks
       text << '  ' if $PARAGRAPH_MODE == 0 && $READERS_MODE == 0
     else
       text << child.text
@@ -163,7 +163,7 @@ def process_chapter(chapter, text, footnotes)
       @acrosticMarker = 0
     elsif chapterPart.element? && chapterPart.name == 'note'
       if $PROCESS_FOOTNOTES == 1
-        # Add a markdown footnote number directly to the text
+        # Add a Markdown footnote number directly to the text
         footnoteNumber = footnotes.size + 1
         text << "[^#{footnoteNumber}]"
         # Put the footnote text into the footnotes array, so we can use it later
@@ -187,7 +187,7 @@ def process_chapter(chapter, text, footnotes)
       text << bold
       puts bold if $DEBUG_MODE == 1
     elsif chapterPart.element? && chapterPart.name == 'verse' && chapterPart.has_attribute?('eID')
-      # Insert two spaces at the end of a verse for markdown line breaks
+      # Insert two spaces at the end of a verse for Markdown line breaks
       text << '  ' if $PARAGRAPH_MODE == 0 && $READERS_MODE == 0
     elsif chapterPart.element? && chapterPart.name == 'milestone'
       # Skip milestone (pilcrow) tags as they are processed in `handle_verse_start`
@@ -195,7 +195,7 @@ def process_chapter(chapter, text, footnotes)
       text << '<span class="small-caps">' + chapterPart.text + '</span>'
     else
       # Newlines and regular text go here
-      # Remove preceeding tabs that some OSIS files use for readability
+      # Remove preceding tabs that some OSIS files use for readability
       text << chapterPart.to_s.gsub(/^(\t+)/m, '')
       puts chapterPart if $DEBUG_MODE == 1
     end
@@ -236,7 +236,7 @@ def write_markdown(path, text)
   begin
     File.write(path, text, encoding: 'utf-8')
   rescue => exc
-    STDERR.puts "Error: unable to write markdown file #{path}: #{exc}"
+    STDERR.puts "Error: unable to write Markdown file #{path}: #{exc}"
     exit 1
   end
 end
